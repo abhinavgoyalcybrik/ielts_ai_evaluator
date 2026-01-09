@@ -34,10 +34,24 @@ def evaluate_speaking_part(part, transcript, audio_metrics):
     )
 
     # Base GPT evaluation
-    result = call_gpt(prompt)
+    result_str = call_gpt(prompt)
+    
+    try:
+        import json
+        # Clean up code blocks if Present
+        if "```json" in result_str:
+            result_str = result_str.split("```json")[1].split("```")[0].strip()
+        elif "```" in result_str:
+            result_str = result_str.split("```")[1].split("```")[0].strip()
+            
+        result = json.loads(result_str)
+    except Exception as e:
+        print(f"Failed to parse GPT response: {result_str}")
+        # Fallback or re-raise
+        raise ValueError(f"Invalid evaluator response: {result_str}") from e
 
     # 🔴 FLUENCY HARD RULES (IELTS-STYLE)
-    fluency = result["fluency"]
+    fluency = result.get("fluency", 0)
 
     wpm = audio_metrics.get("speech_rate_wpm", 0)
     pauses = audio_metrics.get("pause_count", 0)
