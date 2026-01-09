@@ -18,17 +18,21 @@ async def upload_speaking_audio(
     if part not in [1, 2, 3]:
         raise HTTPException(status_code=400, detail="Invalid part number")
 
-    # 🔑 RULE: attempt_id generate ONLY for Part 1
-    if part == 1:
-        attempt_id = attempt_id or uuid4().hex
-    else:
-        if not attempt_id:
+    # 🔑 Generate or use provided attempt_id
+    # For Part 1: Generate if not provided
+    # For Parts 2 & 3: Require attempt_id but auto-create entry if not exists
+    if not attempt_id:
+        if part == 1:
+            attempt_id = uuid4().hex
+        else:
             raise HTTPException(
                 status_code=400,
                 detail="attempt_id is required for Part 2 and Part 3"
             )
-        if attempt_id not in SPEAKING_ATTEMPTS:
-            raise HTTPException(status_code=400, detail="Invalid attempt_id")
+    
+    # Auto-create entry if it doesn't exist (supports frontend-generated IDs)
+    if attempt_id not in SPEAKING_ATTEMPTS:
+        SPEAKING_ATTEMPTS[attempt_id] = {"parts": {}}
 
     # ---- AUDIO PROCESSING ----
     transcript = transcribe_audio(file)
