@@ -21,6 +21,11 @@ def get_client():
 
 def call_gpt(messages, model="gpt-4o-mini"):
     client = get_client()
+    
+    # Auto-wrap string prompts
+    if isinstance(messages, str):
+        messages = [{"role": "user", "content": messages}]
+        
     response = client.chat.completions.create(
         model=model,
         messages=messages
