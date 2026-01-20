@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from uuid import uuid4
 
 from utils.audio_transcriber import transcribe_audio
@@ -13,7 +13,8 @@ router = APIRouter(prefix="/speaking", tags=["Speaking"])
 async def upload_speaking_audio(
     part: int,
     file: UploadFile = File(...),
-    attempt_id: str | None = None
+    attempt_id: str | None = Form(None)
+
 ):
     if part not in [1, 2, 3]:
         raise HTTPException(status_code=400, detail="Invalid part number")
