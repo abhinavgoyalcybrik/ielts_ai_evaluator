@@ -34,5 +34,20 @@ Return ONLY valid JSON in this format:
   "feedback": {
     "strengths": "...",
     "improvements": "..."
-  }
+  },
+  "grammar_analysis": [
+    {
+      "error": "exact phrase from transcript",
+      "correction": "corrected phrase",
+      "explanation": "why it is wrong",
+      "type": "preposition/tense/article/etc"
+    }
+  ],
+  "vocabulary_analysis": [
+    {
+      "word": "word or phrase",
+      "cefr": "A1/A2/B1/B2/C1/C2",
+      "enhancement": "better alternative (optional)"
+    }
+  ]
 }

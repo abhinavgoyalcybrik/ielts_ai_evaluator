@@ -38,12 +38,32 @@ def extract_audio_features(file: UploadFile) -> dict:
         y, sr = librosa.load(load_path, sr=16000)
         
         duration = librosa.get_duration(y=y, sr=sr)
-        intervals = librosa.effects.split(y, top_db=25)
-        pause_count = max(0, len(intervals) - 1)
         
+        # Detect non-silent intervals
+        non_silent_intervals = librosa.effects.split(y, top_db=25, frame_length=2048, hop_length=512)
+        
+        # Calculate silent intervals (pauses) in seconds
+        pauses = []
+        last_end = 0.0
+        
+        for start_sample, end_sample in non_silent_intervals:
+            start_sec = float(start_sample) / sr
+            end_sec = float(end_sample) / sr
+            
+            if start_sec > last_end:
+                pause_dur = start_sec - last_end
+                if pause_dur > 0.3:  # Only count pauses > 300ms
+                    pauses.append({
+                        "start": round(last_end, 2),
+                        "end": round(start_sec, 2),
+                        "duration": round(pause_dur, 2)
+                    })
+            last_end = end_sec
+
         return {
             "duration_sec": round(duration, 2),
-            "pause_count": pause_count
+            "pause_count": len(pauses),
+            "pauses": pauses
         }
         
     finally:

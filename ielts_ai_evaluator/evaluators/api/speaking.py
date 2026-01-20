@@ -35,11 +35,18 @@ async def upload_speaking_audio(
         SPEAKING_ATTEMPTS[attempt_id] = {"parts": {}}
 
     # ---- AUDIO PROCESSING ----
-    transcript = transcribe_audio(file)
+    transcript_result = transcribe_audio(file)
     audio_metrics = extract_audio_features(file)
 
+    # Handle text extraction
+    if isinstance(transcript_result, dict):
+        transcript_text = transcript_result.get("text", "")
+    else:
+        transcript_text = str(transcript_result)
+        transcript_result = {"text": transcript_text}
+
     # Speech rate (WPM)
-    words = len(transcript.split())
+    words = len(transcript_text.split())
     duration = audio_metrics.get("duration_sec", 1)
     speech_rate = round((words / duration) * 60) if duration > 0 else 0
 
@@ -48,7 +55,7 @@ async def upload_speaking_audio(
     # ---- EVALUATION ----
     result = evaluate_speaking_part(
         part=part,
-        transcript=transcript,
+        transcript=transcript_result,  # Pass full object
         audio_metrics=audio_metrics
     )
 

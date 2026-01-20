@@ -7,7 +7,7 @@ from pydub import AudioSegment
 model = whisper.load_model("base")
 
 
-def transcribe_audio(file: UploadFile) -> str:
+def transcribe_audio(file: UploadFile) -> dict:
     """
     Transcribe audio from an UploadFile object.
     Supports webm, mp3, wav formats.
@@ -37,9 +37,15 @@ def transcribe_audio(file: UploadFile) -> str:
             transcribe_path = temp_input_path
             temp_wav_path = None
         
-        # Transcribe with Whisper
-        result = model.transcribe(transcribe_path)
-        return result["text"]
+        # Transcribe with Whisper (verbose=True for segments/words)
+        result = model.transcribe(transcribe_path, word_timestamps=True)
+        
+        # Return structured data
+        return {
+            "text": result["text"],
+            "segments": result["segments"],  # Includes start, end, avg_logprob
+            "language": result["language"]
+        }
         
     finally:
         # Cleanup temp files
